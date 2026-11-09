@@ -1,59 +1,57 @@
-# Sistema RBC - Recomendacao de Filmes
+# Sistema RBC - Recomendação de Filmes
 
-Trabalho academico desenvolvido em Python utilizando **Raciocinio Baseado em Casos (RBC)** para recomendacao de filmes.
+Projeto acadêmico desenvolvido em Python utilizando **Raciocínio Baseado em Casos (RBC)** para recomendar filmes por semelhança.
 
-A ideia do sistema e simples: a partir de um filme escolhido ou de preferencias informadas pelo usuario, o programa compara essas caracteristicas com os filmes da base e apresenta os **5 casos mais semelhantes**.
+A proposta é simples: o usuário escolhe um filme da base ou informa suas preferências, e o sistema compara essas informações com os demais filmes para apresentar os **5 casos mais semelhantes**.
 
 ## Objetivo
 
-Aplicar os conceitos de RBC em uma base de filmes, trabalhando principalmente com:
+Aplicar os conceitos de RBC em uma base de filmes, utilizando:
 
-- selecao de atributos;
-- definicao de pesos;
-- calculo de similaridade local;
-- calculo de similaridade global;
-- recuperacao dos casos mais semelhantes.
-
-O sistema nao utiliza inteligencia artificial generativa nem treinamento de modelos. As recomendacoes sao feitas diretamente pela comparacao entre os casos existentes na base.
+- seleção de atributos;
+- definição de pesos;
+- cálculo de similaridade local;
+- cálculo de similaridade global;
+- recuperação dos casos mais semelhantes.
 
 ## Base de dados
 
-O projeto utiliza uma versao tratada da base **TMDB 5000 Movies**, com aproximadamente 4.800 filmes.
+O projeto utiliza uma versão tratada da base **TMDB 5000 Movies**, com 4.803 filmes.
 
-O arquivo `filmes.csv` contem somente os campos necessarios para o sistema:
+O arquivo `filmes.csv` mantém os dados necessários para a recomendação:
 
 - ID;
-- titulo;
-- generos;
+- título;
+- gêneros;
 - idioma original;
-- ano de lancamento;
-- duracao;
-- nota media.
+- ano de lançamento;
+- duração;
+- nota média.
 
 ## Atributos utilizados
 
-Foram escolhidos cinco atributos para calcular a semelhanca entre os filmes.
+Foram escolhidos cinco atributos para calcular a semelhança entre os filmes.
 
 | Atributo | Tipo | Peso |
 | --- | --- | ---: |
-| Generos | Categorico / conjunto | 0,40 |
-| Idioma original | Categorico nominal | 0,10 |
-| Ano de lancamento | Numerico discreto | 0,20 |
-| Duracao | Numerico | 0,15 |
-| Nota media | Numerico continuo | 0,15 |
+| Gêneros | Conjunto de categorias nominais | 0,40 |
+| Idioma original | Categórico nominal | 0,10 |
+| Ano de lançamento | Numérico discreto | 0,20 |
+| Duração | Numérico | 0,15 |
+| Nota média | Numérico contínuo | 0,15 |
 
-Os pesos somam 1. O genero recebeu o maior peso por ser considerado a caracteristica mais importante para aproximar filmes com propostas semelhantes.
+Os pesos somam 1. O gênero recebeu o maior peso por ter maior influência na aproximação entre filmes com propostas parecidas.
 
 ## Similaridade local
 
-A similaridade local compara **um atributo por vez**. Todos os resultados ficam entre 0 e 1.
+A similaridade local compara **um atributo por vez**. O resultado fica entre 0 e 1.
 
-### Generos
+### Gêneros
 
-Para generos foi utilizado o indice de **Jaccard**:
+Para gêneros foi usado o índice de **Jaccard**:
 
 ```text
-similaridade = generos em comum / total de generos diferentes
+similaridade = gêneros em comum / total de gêneros diferentes
 ```
 
 Exemplo:
@@ -62,12 +60,12 @@ Exemplo:
 Filme A: Action, Adventure
 Filme B: Action, Drama
 
-1 genero em comum / 3 generos diferentes = 0,333
+1 gênero em comum / 3 gêneros diferentes = 0,333
 ```
 
 ### Idioma
 
-A comparacao e direta:
+A comparação é direta:
 
 ```text
 mesmo idioma     = 1
@@ -76,63 +74,61 @@ idioma diferente = 0
 
 ### Ano
 
-A diferenca entre os anos e comparada usando uma tolerancia de 30 anos:
+A diferença entre os anos é comparada usando uma tolerância de 30 anos:
 
 ```text
-similaridade = max(0, 1 - diferenca / 30)
+similaridade = max(0, 1 - diferença / 30)
 ```
 
-### Duracao
+### Duração
 
-Para duracao foi utilizada uma tolerancia de 120 minutos:
+Para duração foi usada uma tolerância de 120 minutos:
 
 ```text
-similaridade = max(0, 1 - diferenca / 120)
+similaridade = max(0, 1 - diferença / 120)
 ```
 
 ### Nota
 
-Para a nota media foi utilizada uma tolerancia de 10 pontos:
+Para a nota média foi usada uma tolerância de 10 pontos:
 
 ```text
-similaridade = max(0, 1 - diferenca / 10)
+similaridade = max(0, 1 - diferença / 10)
 ```
 
-Quando algum dado esta ausente, a similaridade daquele atributo recebe valor 0.
+Quando algum dado está ausente, a similaridade daquele atributo recebe valor 0.
 
 ## Similaridade global
 
-Depois das cinco comparacoes locais, o sistema calcula uma media ponderada.
+Depois das cinco comparações locais, o sistema calcula uma média ponderada:
 
 ```text
-S = 0,40 * genero
+S = 0,40 * gênero
   + 0,10 * idioma
   + 0,20 * ano
-  + 0,15 * duracao
+  + 0,15 * duração
   + 0,15 * nota
 ```
 
-O resultado final representa o nivel de semelhanca entre a consulta e cada filme da base.
+O resultado final representa o nível de semelhança entre a consulta e cada filme da base.
 
-Por exemplo, um resultado de **0,943** e apresentado como **94,30% de similaridade**.
+Por exemplo, um resultado de **0,943** é apresentado como **94,30% de similaridade**.
 
-## Como o codigo funciona
+## Como o código funciona
 
-O arquivo principal e o `main.py`.
-
-As principais funcoes sao:
+O arquivo principal é o `main.py`.
 
 ### `carregar_filmes()`
 
-Abre o arquivo `filmes.csv` e prepara os dados para as comparacoes.
+Abre o arquivo `filmes.csv` e prepara os dados para as comparações.
 
 ### `similaridade_local()`
 
-Compara dois filmes em um atributo especifico.
+Compara dois filmes em um atributo específico.
 
 ### `similaridade_global()`
 
-Reune as cinco similaridades locais e aplica os pesos definidos no projeto.
+Reúne as cinco similaridades locais e aplica os pesos definidos no projeto.
 
 ### `recomendar()`
 
@@ -144,11 +140,11 @@ Exibe os resultados e as similaridades calculadas.
 
 ### `escolher_filme()`
 
-Permite buscar um filme da base pelo titulo.
+Permite buscar um filme da base pelo título.
 
 ### `criar_consulta()`
 
-Permite informar manualmente genero, idioma, ano, duracao e nota para criar uma recomendacao personalizada.
+Permite informar manualmente gênero, idioma, ano, duração e nota para criar uma recomendação personalizada.
 
 ### `main()`
 
@@ -157,7 +153,7 @@ Controla o menu e o fluxo geral do programa.
 ## Fluxo do sistema
 
 ```text
-Usuario escolhe um filme ou informa preferencias
+Usuário escolhe um filme ou informa preferências
                     |
                     v
           Sistema carrega a base
@@ -169,19 +165,19 @@ Usuario escolhe um filme ou informa preferencias
        Calcula similaridade global
                     |
                     v
-     Ordena os filmes por semelhanca
+     Ordena os filmes por semelhança
                     |
                     v
              Apresenta TOP 5
 ```
 
-## TOP 5 de tres filmes
+## TOP 5 de três filmes
 
-O programa possui tres exemplos utilizados na entrega.
+O programa possui três exemplos usados na entrega.
 
 ### Avatar
 
-| Posicao | Filme | Similaridade |
+| Posição | Filme | Similaridade |
 | ---: | --- | ---: |
 | 1 | Superman Returns | 94,30% |
 | 2 | Man of Steel | 93,91% |
@@ -191,7 +187,7 @@ O programa possui tres exemplos utilizados na entrega.
 
 ### The Dark Knight
 
-| Posicao | Filme | Similaridade |
+| Posição | Filme | Similaridade |
 | ---: | --- | ---: |
 | 1 | Man on Fire | 95,23% |
 | 2 | The Dark Knight Rises | 94,81% |
@@ -201,7 +197,7 @@ O programa possui tres exemplos utilizados na entrega.
 
 ### Toy Story
 
-| Posicao | Filme | Similaridade |
+| Posição | Filme | Similaridade |
 | ---: | --- | ---: |
 | 1 | Toy Story 2 | 95,36% |
 | 2 | Chicken Run | 94,49% |
@@ -211,9 +207,7 @@ O programa possui tres exemplos utilizados na entrega.
 
 ## Como executar
 
-E necessario ter **Python 3.9 ou superior** instalado.
-
-Nao e necessario instalar bibliotecas adicionais.
+É necessário ter **Python 3.9 ou superior** instalado. Não é necessário instalar bibliotecas adicionais.
 
 Na pasta do projeto:
 
@@ -221,19 +215,19 @@ Na pasta do projeto:
 python main.py
 ```
 
-Tambem e possivel pesquisar diretamente por um filme:
+Para pesquisar diretamente por um filme:
 
 ```bash
 python main.py --filme "Avatar"
 ```
 
-Para executar os tres exemplos utilizados na entrega:
+Para executar os três exemplos da entrega:
 
 ```bash
 python main.py --exemplos
 ```
 
-No Windows, caso o comando `python` nao funcione, pode ser utilizado `py`:
+No Windows, também pode ser usado:
 
 ```bash
 py main.py
@@ -249,16 +243,14 @@ rbc-recomendacao-filmes/
 |-- documento_sistema.md
 ```
 
-## Relacao com RBC
+## Relação com o RBC
 
-Cada filme da base representa um **caso**.
+Cada filme da base representa um **caso**. O filme escolhido ou as preferências informadas representam a nova consulta.
 
-O filme escolhido ou as preferencias do usuario representam o **novo problema**. O sistema recupera os casos mais semelhantes e utiliza esses casos como recomendacao.
+O sistema recupera os casos mais semelhantes e usa esses casos como recomendação. Neste projeto são utilizadas principalmente as etapas de **recuperação** e **reutilização** do ciclo de RBC.
 
-Neste projeto sao utilizadas principalmente as etapas de **recuperacao** e **reutilizacao** do ciclo de RBC.
+## Observações
 
-## Observacoes
+A base não informa em qual plataforma de streaming cada filme está disponível. O objetivo do projeto é demonstrar o mecanismo de recomendação por similaridade.
 
-A base nao possui informacoes sobre em qual plataforma de streaming cada filme esta disponivel. O objetivo do projeto e demonstrar o mecanismo de recomendacao por similaridade.
-
-Os pesos e as tolerancias foram definidos para esta implementacao e podem ser ajustados em trabalhos futuros.
+Os pesos e as tolerâncias foram definidos para esta implementação e podem ser ajustados em versões futuras.
